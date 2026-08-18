@@ -9,7 +9,7 @@
     <h1>Formulario Html</h1>
 
     <h3>Entradas simples</h3>
-    <form>
+    <form action="RespuestaAlFormulario.html" method="get">
 
         <label>Apellido:</label>
         <input type="text" name="apellido"><br><br>
@@ -71,7 +71,7 @@
         <input type="text" pattern="[A-Za-z]{3,}" placeholder="mínimo 3 letras"><br><br>
 
         <label>Pattern de validación:</label>
-        <input type="tel" pattern="(\+54)[0-9]{10}" placeholder="(+54) 11 44445555"><br><br>
+        <input type="tel" pattern="(\+54|\(\+54\))\s?[0-9]{2}\s?[0-9]{8}" placeholder="(+54) 11 44445555"><br><br>
 
         <input type="submit" value="Enviar">
         <input type="reset" value="Restablecer">
