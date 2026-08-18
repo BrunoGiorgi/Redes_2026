@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Ejercicio HTTP</title>
+</head>
+<body>
+
+    <header>
+        <h1>Preguntas y referencias sobre protocolo HTTP</h1>
+    </header>
+
+    <section>
+        <h2>Sección de referencias de interes</h2>
+        <nav>
+            <ul>
+                <li><a href="https://www.cloudflare.com/es-es/learning/ddos/glossary/hypertext-transfer-protocol-http/" target="_blank">Cloudflare</a></li>
+                <li><a href="https://developer.mozilla.org/es/docs/Web/HTTP" target="_blank">Mozilla</a></li>
+                <li><a href="https://concepto.de/http/" target="_blank">Concepto</a></li>
+            </ul>
+        </nav>
+    </section>
+
+    <hr>
+
+    <section>
+        <h2>Sección de Preguntas sobre HTTP</h2>
+        <ul>
+            <li><strong>Pregunta 1 ¿Sobre qué protocolo binario está montado HTTP?</strong>
+                <p>Respuesta:
+                    HTTP está montado sobre TCP (Transmission Control Protocol), que es un protocolo binario orientado a conexión, 
+                    ubicado en la capa de transporte del modelo TCP/IP. TCP garantiza la entrega ordenada y confiable de los datos entre cliente y servidor. 
+                    Con HTTP/3 esto cambia, ya que se monta sobre QUIC, que a su vez corre sobre UDP.
+                </p>
+            </li>
+            <li><strong>Pregunta 2 ¿Cuáles son los clientes y servidores HTTP más utilizados?</strong>
+                <p>Respuesta
+                    Clientes HTTP: los navegadores web (Google Chrome, Mozilla Firefox, Safari, Microsoft Edge), y 
+                    también clientes de línea de comandos o librerías como cURL, Postman, wget, y librerías de programación 
+                    (requests en Python, HttpClient en Java/.NET, Axios/Fetch en JavaScript).
+                    Servidores HTTP: Apache HTTP Server, Nginx, Microsoft IIS (Internet Information Services), 
+                    y también servidores más livianos como Node.js (con Express), 
+                    Tomcat (para aplicaciones Java), entre otros.
+                </p>
+            </li>
+            <li><strong>Pregunta 3 ¿Qué verbos admite un comando en el requerimiento HTTP?</strong>
+                <p>Respuesta
+                    Los métodos (verbos) principales son: 
+                    GET: solicita/obtiene un recurso 
+                    POST: envía datos para crear un recurso
+                    PUT: actualiza o reemplaza un recurso completo
+                    PATCH: actualiza parcialmente un recurso
+                    DELETE: elimina un recurso
+                    HEAD: igual que GET pero solo devuelve los headers, sin body
+                    OPTIONS: consulta qué métodos/opciones admite el servidor para un recurso
+                    TRACE: hace un eco del requerimiento recibido (para diagnóstico)
+                    CONNECT: establece un túnel (usado típicamente para HTTPS a través de proxies)
+                </p>
+            </li>
+            <li><strong>Pregunta 4 ¿Qué contenido lleva el body de un requerimiento HTTP?</strong>
+                <p>Respuesta
+                    El body (cuerpo) lleva los datos que el cliente envía al servidor, por ejemplo: datos de un formulario, un archivo JSON, XML, datos binarios 
+                    (imágenes, archivos adjuntos), o parámetros codificados. No todos los métodos llevan body (GET normalmente no lleva, POST/PUT/PATCH sí suelen llevarlo). 
+                    El tipo de contenido se especifica en el header Content-Type.
+                </p>
+            </li>
+            <li><strong>Pregunta 5 ¿Qué diferencia existe entre una URL y una URI?</strong>
+                <p>Respuesta
+                    URI (Uniform Resource Identifier) es el concepto general: un identificador que nombra o identifica un recurso, ya sea por ubicación, 
+                    por nombre, o ambos.
+                    URL (Uniform Resource Locator) es un subtipo de URI que además de identificar el recurso, indica cómo localizarlo (protocolo, dominio, ruta), 
+                    por ejemplo https://www.ejemplo.com/pagina.
+                    También existe el concepto de URN (Uniform Resource Name), otro subtipo de URI que identifica un recurso por su nombre sin indicar cómo obtenerlo.
+                </p>
+            </li>
+            <li><strong>Pregunta 6 ¿Cómo se almacena información relacionada con las respuestas HTTP?</strong>
+                <p>Respuesta  Se almacena principalmente mediante:
+                    Cookies: pequeños fragmentos de información que el servidor envía al cliente (header Set-Cookie) y 
+                    que el navegador guarda y reenvía en futuras solicitudes.
+                    Caché del navegador: se guardan respuestas (recursos) localmente según los headers de control de caché (Cache-Control, Expires, ETag, Last-Modified) para 
+                    no tener que volver a pedirlos al servidor.
+                    Almacenamiento local/sesión (localStorage, sessionStorage): mecanismos del lado del navegador para persistir datos relacionados a la aplicación web.
+</p>
+            </li>
+            <li><strong>Pregunta 7 ¿Qué significa HTTP sobre conexiones preexistentes?</strong>
+                <p>Respuesta
+                    Se refiere a HTTP persistente (o keep-alive), donde una misma conexión TCP se reutiliza para enviar múltiples requerimientos y respuestas, 
+                    en lugar de abrir y cerrar una conexión nueva por cada petición. Esto reduce la sobrecarga de establecer conexiones TCP repetidamente (handshake) y 
+                    mejora significativamente el rendimiento. Es el comportamiento por defecto desde HTTP/1.1.
+                </p>
+            </li>
+            <li><strong>Pregunta 8 ¿Qué significa Virtual Hosting?</strong>
+                <p>Respuesta
+                    Es la capacidad de un mismo servidor físico (con una única dirección IP) de alojar múltiples sitios web o dominios distintos. El servidor identifica a qué 
+                    sitio corresponde cada solicitud gracias al header Host que envía el cliente en el requerimiento HTTP, permitiendo así diferenciar entre, por ejemplo, 
+                    sitio1.com y sitio2.com alojados en el mismo servidor.
+                </p>
+            </li>
+            <li><strong>Pregunta 9 ¿Qué significa Cache por ETag?</strong>
+                <p>Respuesta
+                    El ETag (Entity Tag) es un identificador único que el servidor asigna a una versión específica de un recurso. Cuando el cliente vuelve a solicitar ese 
+                    recurso, envía el ETag guardado en el header If-None-Match. Si el recurso no cambió, el servidor responde con un código 304 Not Modified 
+                    (sin reenviar el contenido), ahorrando ancho de banda. Si cambió, se envía el nuevo contenido junto con un nuevo ETag.
+                </p>
+            </li>
+            <li><strong>Pregunta 10 ¿Por qué HTTP se considera STATELESS (sin estado)?</strong>
+                <p>Respuesta
+                    Porque cada requerimiento HTTP es independiente de los demás: el servidor no guarda información sobre las solicitudes anteriores del mismo cliente. 
+                    Cada petición debe contener toda la información necesaria para ser procesada, ya que el protocolo en sí mismo no mantiene "memoria" de la interacción 
+                    previa. Por eso se recurre a mecanismos externos como cookies, sesiones o tokens para simular estado entre peticiones.
+                </p>
+            </li>
+            <li><strong>Pregunta 11 ¿Qué nueva versión de HTTP se está usando para mejorar la velocidad de la web?</strong>
+                <p>Respuesta
+                    HTTP/3, que reemplaza el transporte TCP por QUIC (basado en UDP), reduciendo la latencia de conexión, mejorando el manejo de pérdida de paquetes y 
+                    permitiendo multiplexado real sin bloqueo de cabeza de línea (head-of-line blocking). (También es válido mencionar HTTP/2 como paso previo, 
+                    que introdujo multiplexado de streams sobre una misma conexión TCP y compresión de headers).
+                </p>
+            </li>
+            <li><strong>Pregunta 12 ¿Cómo mejora el comportamiento de una aplicación web en ambientes ruidosos o de conexión débil?</strong>
+                <p>Respuesta
+                    Gracias a HTTP/3 sobre QUIC:
+                    Al usar UDP en lugar de TCP, evita el bloqueo de cabeza de línea (head-of-line blocking): si se pierde un paquete de un stream, no bloquea a los demás streams de la misma conexión.
+                    QUIC tiene mecanismos de recuperación de pérdida de paquetes más eficientes y reconexión más rápida.
+                    Permite migración de conexión: si el cliente cambia de red (por ejemplo, de WiFi a datos móviles), la conexión puede mantenerse sin necesidad de renegociar todo desde cero, algo muy útil en conexiones móviles inestables.
+                    El handshake es más rápido (combina el establecimiento de conexión y la negociación TLS en menos round-trips), reduciendo la latencia percibida especialmente en redes con alta latencia o pérdida de paquetes.
+                </p>
+            </li>
+        </ul>
+    </section>
+
+    <hr>
+
+    <section>
+        <h2>Sección de imagenes representativas del protocolo</h2>
+        <img src="https://media2.dev.to/dynamic/image/width=800%2Cheight=%2Cfit=scale-down%2Cgravity=auto%2Cformat=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Fqbz2hvypfys8sbq763nn.jpg" alt="Imagen 1" width="400">
+    </section>
+
+    <hr>
+
+    <section>
+        <h2>Sección de videos representativos del protocolo</h2>
+        <video width="500" controls>
+            <source src="https://www.image2url.com/r2/default/videos/1786993327031-ed9dfa6f-c146-4beb-aa44-75cac3fd5da1.mp4" type="video/mp4">
+            Tu navegador no soporta la etiqueta de video.
+        </video>
+    </section>
+
+    <hr>
+
+    <section>
+        <h2>Datos del alumno</h2>
+        <p><em>Bruno Giorgi </em></p>
+    </section>
+
+</body>
+</html>
