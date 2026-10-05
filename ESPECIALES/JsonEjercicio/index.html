@@ -1,0 +1,90 @@
+var textoJSONClientes = '{"clientes":[' +
+'{
+    "CodCliente":"C0001",
+    "RazonSocial":"Comercial Alfa S.A.",
+    "CUIT":"30-12345678-9","CondicionIVA":"IVA_GENERAL",
+    "FechaInicio":"2024-03-01",
+    "SaldoCuentaCorriente":15200.75,
+    "UltimoBalance":"balance_C0001_2024-12-31.pdf"
+},' +
+
+'{
+    "CodCliente":"C0002",
+    "RazonSocial":"Servicios Beta SRL",
+    "CUIT":"27-87654321-4",
+    "CondicionIVA":"IVA_REDUCIDO",
+    "FechaInicio":"2023-07-15",
+    "SaldoCuentaCorriente":-450.0,
+    "UltimoBalance":"balance_C0002_2024-06-30.pdf"
+}' +
+']}';
+
+// Parseo a objeto JavaScript
+var objClientes = JSON.parse(textoJSONClientes);
+
+
+[
+{
+    "codigoEvento": "EV001",
+    "descripcion": "Recital de bandas locales",
+    "fechaEvento": "2026-10-10",
+    "codigoSala": "S01",
+    "recaudacion": 450000,
+    "flyer": "flyers/ev001_recital_bandas.jpg"
+},
+{
+    "codigoEvento": "EV002",
+    "descripcion": "Charla de tecnología y redes",
+    "fechaEvento": "2026-10-17",
+    "codigoSala": "S03",
+    "recaudacion": 120000.5,
+    "flyer": "flyers/ev002_charla_redes.png"
+},
+{
+    "codigoEvento": "EV003",
+    "descripcion": "Obra de teatro independiente",
+    "fechaEvento": "2026-11-05",
+    "codigoSala": "S02",
+    "recaudacion": 280000,
+    "flyer": "flyers/ev003_obra_teatro.jpg"
+}
+]
+
+
+{
+    "salas": [
+        { "codigo": 1, "descripcion": "Sala Principal" },
+        { "codigo": 2, "descripcion": "Sala de Conferencias" },
+        { "codigo": 3, "descripcion": "Salón de Fiestas" }
+    ]
+}
+
+
+{
+"eventos": [
+    {
+        "codigo_evento": 101,
+        "descripcion": "Recital de música en vivo",
+        "fecha_evento": "2026-10-15",
+        "codigo_sala": 1,
+        "recaudacion": 450000.00,
+        "flyer": "flyers/recital_101.jpg"
+},
+    {
+        "codigo_evento": 102,
+        "descripcion": "Charla de tecnología",
+        "fecha_evento": "2026-11-03",
+        "codigo_sala": 2,
+        "recaudacion": 120000.50,
+        "flyer": "flyers/charla_102.png"
+    },
+    {
+        "codigo_evento": 103,
+        "descripcion": "Fiesta de egresados",
+        "fecha_evento": "2026-12-12",
+        "codigo_sala": 3,
+        "recaudacion": 280000.00,
+        "flyer": "flyers/fiesta_103.jpg"
+    }
+]
+}

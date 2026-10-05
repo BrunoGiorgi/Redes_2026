@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maestro de Clientes - Tabla</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Segoe UI", Arial, sans-serif; }
+    body { background-color: #f2f4f8; color: #333; }
+    header, footer { position: fixed; left: 0; width: 100%; background-color: #0056b3; color: white; z-index: 10; }
+    header { top: 0; height: 70px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
+    footer { bottom: 0; height: 50px; text-align: center; line-height: 50px; font-weight: 600; box-shadow: 0 -2px 6px rgba(0,0,0,0.3); }
+
+    .table-container { position: absolute; top: 70px; bottom: 50px; left: 0; right: 0; overflow-y: auto; padding: 20px; }
+    h2 { font-size: 1.5em; color: #fff; margin: 0; }
+    .botones { display: flex; gap: 10px; }
+    button { background-color: white; border: 2px solid #0056b3; color: #0056b3; padding: 8px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: all 0.15s ease-in-out; }
+    button:hover { background-color: #0056b3; color: white; }
+
+    table { width: 100%; border-collapse: collapse; background-color: white; border-radius: 10px; overflow: hidden; box-shadow: 0 3px 8px rgba(0,0,0,0.1); }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; vertical-align: middle; }
+    th { background-color: #0077cc; color: white; position: sticky; top: 0; z-index: 5; }
+    tr:nth-child(even) { background-color: #f0f6ff; }
+    tfoot td { background-color: orange; color: #000; font-weight: bold; position: sticky; bottom: 0; z-index: 4; text-align: left; }
+
+    .saldo-neg { color: #c62828; font-weight: 700; }
+    .accion-btn { padding: 6px 8px; font-size: 0.9rem; border-radius: 6px; border: 1px solid #0077cc; background: white; color: #0077cc; cursor: pointer; }
+    .accion-btn:hover { background:#0077cc; color:#fff; }
+
+    @media (max-width: 900px) {
+      th, td { font-size: 0.9rem; padding: 8px; }
+      header { height: 90px; flex-direction: column; gap: 6px; padding: 10px 12px; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div style="display:flex;align-items:center;gap:14px">
+      <h2>Clientes</h2>
+      <div style="font-size:0.9rem;color:#e6f2ff;margin-left:8px"></div>
+    </div>
+    <div class="botones">
+      <button id="btnCargar">Cargar datos</button>
+      <button id="btnVaciar">Vaciar datos</button>
+    </div>
+  </header>
+
+  <div class="table-container">
+    <table id="tablaClientes">
+      <thead>
+        <tr>
+          <th>CodCliente</th>
+          <th>Razón Social</th>
+          <th>CUIT</th>
+          <th>Cond. IVA</th>
+          <th>Fecha Inicio</th>
+          <th>Saldo (ARS)</th>
+          <th>Últ. Balance</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
+      <tbody id="cuerpo"></tbody>
+      <tfoot>
+        <tr>
+          <td colspan="5">Total Saldo (ARS)</td>
+          <td id="totalSaldo">$0.00</td>
+          <td colspan="2"></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <footer>
+    Pie de pagina
+  </footer>
+
+  <script>
+    // JSON con clientes (estilo concatenado)
+    var textoJSONClientes = '{"clientes":[' +
+    '{"CodCliente":"C0001","RazonSocial":"Comercial Alfa S.A.","CUIT":"30-12345678-9","CondicionIVA":"IVA_GENERAL","FechaInicio":"2024-03-01","SaldoCuentaCorriente":15200.75,"UltimoBalance":"balance_C0001_2024-12-31.pdf"},' +
+    '{"CodCliente":"C0002","RazonSocial":"Servicios Beta SRL","CUIT":"27-87654321-4","CondicionIVA":"IVA_REDUCIDO","FechaInicio":"2023-07-15","SaldoCuentaCorriente":-450.0,"UltimoBalance":"balance_C0002_2024-06-30.pdf"}' +
+    ']}';
+
+    var objClientes = JSON.parse(textoJSONClientes);
+
+    const btnCargar = document.getElementById('btnCargar');
+    const btnVaciar = document.getElementById('btnVaciar');
+    const tbody = document.getElementById('cuerpo');
+    const totalSaldoEl = document.getElementById('totalSaldo');
+
+    function formatearMoneda(v){
+      return v.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+    }
+
+    function renderClientes(){
+      tbody.innerHTML = '';
+      let total = 0;
+      objClientes.clientes.forEach((c, idx) => {
+        const tr = document.createElement('tr');
+
+        const saldo = Number(c.SaldoCuentaCorriente) || 0;
+        total += saldo;
+
+        tr.innerHTML = `
+          <td>${escapeHtml(c.CodCliente)}</td>
+          <td>${escapeHtml(c.RazonSocial)}</td>
+          <td>${escapeHtml(c.CUIT)}</td>
+          <td>${escapeHtml(c.CondicionIVA)}</td>
+          <td>${escapeHtml(c.FechaInicio)}</td>
+          <td class="${saldo < 0 ? 'saldo-neg' : ''}">${saldo < 0 ? '-' : ''}$${formatearMoneda(Math.abs(saldo))}</td>
+          <td>${c.UltimoBalance ? escapeHtml(c.UltimoBalance) : '-'}</td>
+          <td><button class="accion-btn" data-idx="${idx}">Ver Balance</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      totalSaldoEl.textContent = '$' + formatearMoneda(total);
+      // attach handlers for view buttons
+      tbody.querySelectorAll('.accion-btn').forEach(b => b.addEventListener('click', onVerBalance));
+    }
+
+    function onVerBalance(e){
+      const idx = Number(e.currentTarget.dataset.idx);
+      const c = objClientes.clientes[idx];
+      if(!c) return;
+      if(c.UltimoBalance && c.UltimoBalance.trim() !== ''){
+        // simulación: en un servidor real usaríamos window.open(url)
+        alert('Simulación: abrir/descargar -> ' + c.UltimoBalance);
+      } else {
+        alert('No hay archivo de balance para este cliente.');
+      }
+    }
+
+    function vaciarTabla(){
+      tbody.innerHTML = '';
+      totalSaldoEl.textContent = '$0.00';
+    }
+
+    btnCargar.addEventListener('click', renderClientes);
+    btnVaciar.addEventListener('click', vaciarTabla);
+
+    // utilidades
+    function escapeHtml(s){
+      if(s === null || s === undefined) return '';
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    // opcional: carga inicial automática si querés
+    // window.addEventListener('DOMContentLoaded', renderClientes);
+  </script>
+</body>
+</html>
