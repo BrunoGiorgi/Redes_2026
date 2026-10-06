@@ -14,28 +14,26 @@
       min-height: 100vh;
     }
 
-    /* Contenedor de la galería */
     .galeria {
       display: flex;
-      flex-direction: row;       /* horizontal por defecto */
-      flex-wrap: wrap;           /* permite que las imágenes bajen de fila si no caben */
-      gap: 30px;                 /* más espacio entre imágenes */
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 30px;
       max-width: 95vw;
-      max-height: 90vh;          /* límite de altura visible */
-      overflow-y: auto;          /* scroll vertical si es necesario */
+      max-height: 90vh;
+      overflow-y: auto;
       padding: 20px;
-      justify-content: center;   /* centrado horizontal */
+      justify-content: center;
       box-sizing: border-box;
     }
 
     .galeria img {
-      width: 500px;              /* tamaño más grande */
+      width: 500px;
       height: auto;
-      flex-shrink: 1;            /* se encogen si no hay espacio */
-      transition: all 0.3s ease; /* efecto suave al cambiar de tamaño */
+      flex-shrink: 1;
+      transition: all 0.3s ease;
     }
 
-    /* Ajustes según tamaño de pantalla */
     @media (max-width: 1200px) {
       .galeria img {
         width: 450px;
@@ -56,11 +54,11 @@
 
     @media (max-width: 500px) {
       .galeria {
-        flex-direction: column;  /* pasa a vertical */
+        flex-direction: column;
         align-items: center;
       }
       .galeria img {
-        width: 90%;              /* ocupa casi todo el ancho */
+        width: 90%;
         max-width: 450px;
       }
     }
