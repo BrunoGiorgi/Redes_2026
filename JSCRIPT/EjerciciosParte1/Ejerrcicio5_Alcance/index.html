@@ -4,10 +4,8 @@
   <title>Alcance de variables</title>
   <meta charset="UTF-8">
   <script>
-    // Declaración de variable global sin asignar
     var variableGlobal;
 
-    // Apenas se carga la página, mostramos los 2 mensajes
     window.onload = function() {
       alert("Una variableGlobal fue declarada pero no asignada:\nvar variableGlobal;");
       alert("El tipo de variableGlobal es: " + typeof variableGlobal);
@@ -19,7 +17,6 @@
     }
 
     function asignarSinDeclaracion() {
-      // Si no estuviera declarada, esta asignación la crearía global implícita
       variableGlobal = prompt("Ingrese valor para la variable global:");
       alert("Valor asignado sin declaración: " + variableGlobal);
     }
