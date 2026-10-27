@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Maestro de Clientes - Tabla</title>
+  <title>Eventos por Sala - Tabla</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Segoe UI", Arial, sans-serif; }
     body { background-color: #f2f4f8; color: #333; }
@@ -13,31 +13,35 @@
 
     .table-container { position: absolute; top: 70px; bottom: 50px; left: 0; right: 0; overflow-y: auto; padding: 20px; }
     h2 { font-size: 1.5em; color: #fff; margin: 0; }
+    h3 { font-size: 1.2em; color: #0056b3; margin: 10px 0; }
     .botones { display: flex; gap: 10px; }
     button { background-color: white; border: 2px solid #0056b3; color: #0056b3; padding: 8px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: all 0.15s ease-in-out; }
     button:hover { background-color: #0056b3; color: white; }
 
+    .sala { margin-bottom: 30px; }
+
     table { width: 100%; border-collapse: collapse; background-color: white; border-radius: 10px; overflow: hidden; box-shadow: 0 3px 8px rgba(0,0,0,0.1); }
     th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; vertical-align: middle; }
-    th { background-color: #0077cc; color: white; position: sticky; top: 0; z-index: 5; }
+    th { background-color: #0077cc; color: white; }
     tr:nth-child(even) { background-color: #f0f6ff; }
-    tfoot td { background-color: orange; color: #000; font-weight: bold; position: sticky; bottom: 0; z-index: 4; text-align: left; }
+    tfoot td { background-color: orange; color: #000; font-weight: bold; text-align: left; }
 
-    .saldo-neg { color: #c62828; font-weight: 700; }
+    .total-general { background-color: #0056b3; color: white; font-weight: bold; padding: 14px; border-radius: 10px; font-size: 1.1em; }
+
     .accion-btn { padding: 6px 8px; font-size: 0.9rem; border-radius: 6px; border: 1px solid #0077cc; background: white; color: #0077cc; cursor: pointer; }
     .accion-btn:hover { background:#0077cc; color:#fff; }
 
     @media (max-width: 900px) {
       th, td { font-size: 0.9rem; padding: 8px; }
       header { height: 90px; flex-direction: column; gap: 6px; padding: 10px 12px; align-items: flex-start; }
+      .table-container { top: 90px; }
     }
   </style>
 </head>
 <body>
   <header>
     <div style="display:flex;align-items:center;gap:14px">
-      <h2>Clientes</h2>
-      <div style="font-size:0.9rem;color:#e6f2ff;margin-left:8px"></div>
+      <h2>Eventos por sala</h2>
     </div>
     <div class="botones">
       <button id="btnCargar">Cargar datos</button>
@@ -46,28 +50,7 @@
   </header>
 
   <div class="table-container">
-    <table id="tablaClientes">
-      <thead>
-        <tr>
-          <th>CodCliente</th>
-          <th>Razón Social</th>
-          <th>CUIT</th>
-          <th>Cond. IVA</th>
-          <th>Fecha Inicio</th>
-          <th>Saldo (ARS)</th>
-          <th>Últ. Balance</th>
-          <th>Acción</th>
-        </tr>
-      </thead>
-      <tbody id="cuerpo"></tbody>
-      <tfoot>
-        <tr>
-          <td colspan="5">Total Saldo (ARS)</td>
-          <td id="totalSaldo">$0.00</td>
-          <td colspan="2"></td>
-        </tr>
-      </tfoot>
-    </table>
+    <div id="contenedor"></div>
   </div>
 
   <footer>
@@ -75,78 +58,113 @@
   </footer>
 
   <script>
-    // JSON con clientes (estilo concatenado)
-    var textoJSONClientes = '{"clientes":[' +
-    '{"CodCliente":"C0001","RazonSocial":"Comercial Alfa S.A.","CUIT":"30-12345678-9","CondicionIVA":"IVA_GENERAL","FechaInicio":"2024-03-01","SaldoCuentaCorriente":15200.75,"UltimoBalance":"balance_C0001_2024-12-31.pdf"},' +
-    '{"CodCliente":"C0002","RazonSocial":"Servicios Beta SRL","CUIT":"27-87654321-4","CondicionIVA":"IVA_REDUCIDO","FechaInicio":"2023-07-15","SaldoCuentaCorriente":-450.0,"UltimoBalance":"balance_C0002_2024-06-30.pdf"}' +
+    var textoJSONSalas = '{"salas":[' +
+      '{"sala":{"codigo":"S01","descripcion":"Salón Principal"},"eventos":[' +
+        '{"codigo_evento":"EV001","descripcion":"Fiesta de cumpleaños 15","fecha_evento":"2026-11-07","recaudacion":850000,"flyer":"flyers/EV001.jpg"},' +
+        '{"codigo_evento":"EV004","descripcion":"Casamiento","fecha_evento":"2026-12-05","recaudacion":1750000,"flyer":"flyers/EV004.jpg"}' +
+      ']},' +
+      '{"sala":{"codigo":"S02","descripcion":"Sala de Conferencias"},"eventos":[' +
+        '{"codigo_evento":"EV002","descripcion":"Charla de tecnología y redes","fecha_evento":"2026-11-12","recaudacion":320000,"flyer":"flyers/EV002.png"}' +
+      ']}' +
     ']}';
 
-    var objClientes = JSON.parse(textoJSONClientes);
+    var objSalas = JSON.parse(textoJSONSalas);
 
     const btnCargar = document.getElementById('btnCargar');
     const btnVaciar = document.getElementById('btnVaciar');
-    const tbody = document.getElementById('cuerpo');
-    const totalSaldoEl = document.getElementById('totalSaldo');
+    const contenedor = document.getElementById('contenedor');
 
     function formatearMoneda(v){
-      return v.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+      return v.toLocaleString('es-AR', {minimumFractionDigits:2, maximumFractionDigits:2});
     }
 
-    function renderClientes(){
-      tbody.innerHTML = '';
-      let total = 0;
-      objClientes.clientes.forEach((c, idx) => {
-        const tr = document.createElement('tr');
+    function renderSalas(){
+      contenedor.innerHTML = '';
+      let totalGeneral = 0;
 
-        const saldo = Number(c.SaldoCuentaCorriente) || 0;
-        total += saldo;
+      objSalas.salas.forEach((s, idxSala) => {
+        let subtotal = 0;
+        let filas = '';
 
-        tr.innerHTML = `
-          <td>${escapeHtml(c.CodCliente)}</td>
-          <td>${escapeHtml(c.RazonSocial)}</td>
-          <td>${escapeHtml(c.CUIT)}</td>
-          <td>${escapeHtml(c.CondicionIVA)}</td>
-          <td>${escapeHtml(c.FechaInicio)}</td>
-          <td class="${saldo < 0 ? 'saldo-neg' : ''}">${saldo < 0 ? '-' : ''}$${formatearMoneda(Math.abs(saldo))}</td>
-          <td>${c.UltimoBalance ? escapeHtml(c.UltimoBalance) : '-'}</td>
-          <td><button class="accion-btn" data-idx="${idx}">Ver Balance</button></td>
+        s.eventos.forEach((ev, idxEvento) => {
+          const recaudacion = Number(ev.recaudacion) || 0;
+          subtotal += recaudacion;
+
+          filas += `
+            <tr>
+              <td>${escapeHtml(ev.codigo_evento)}</td>
+              <td>${escapeHtml(ev.descripcion)}</td>
+              <td>${escapeHtml(ev.fecha_evento)}</td>
+              <td>$${formatearMoneda(recaudacion)}</td>
+              <td>${ev.flyer ? escapeHtml(ev.flyer) : '-'}</td>
+              <td><button class="accion-btn" data-sala="${idxSala}" data-evento="${idxEvento}">Ver Flyer</button></td>
+            </tr>
+          `;
+        });
+
+        totalGeneral += subtotal;
+
+        const seccion = document.createElement('div');
+        seccion.className = 'sala';
+        seccion.innerHTML = `
+          <h3>${escapeHtml(s.sala.codigo)} - ${escapeHtml(s.sala.descripcion)}</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Cód. Evento</th>
+                <th>Descripción</th>
+                <th>Fecha</th>
+                <th>Recaudación (ARS)</th>
+                <th>Flyer</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody>${filas}</tbody>
+            <tfoot>
+              <tr>
+                <td colspan="3">Total recaudado ${escapeHtml(s.sala.descripcion)}</td>
+                <td>$${formatearMoneda(subtotal)}</td>
+                <td colspan="2"></td>
+              </tr>
+            </tfoot>
+          </table>
         `;
-        tbody.appendChild(tr);
+        contenedor.appendChild(seccion);
       });
 
-      totalSaldoEl.textContent = '$' + formatearMoneda(total);
-      // attach handlers for view buttons
-      tbody.querySelectorAll('.accion-btn').forEach(b => b.addEventListener('click', onVerBalance));
+      const total = document.createElement('div');
+      total.className = 'total-general';
+      total.textContent = 'Total general recaudado (ARS): $' + formatearMoneda(totalGeneral);
+      contenedor.appendChild(total);
+
+      contenedor.querySelectorAll('.accion-btn').forEach(b => b.addEventListener('click', onVerFlyer));
     }
 
-    function onVerBalance(e){
-      const idx = Number(e.currentTarget.dataset.idx);
-      const c = objClientes.clientes[idx];
-      if(!c) return;
-      if(c.UltimoBalance && c.UltimoBalance.trim() !== ''){
-        // simulación: en un servidor real usaríamos window.open(url)
-        alert('Simulación: abrir/descargar -> ' + c.UltimoBalance);
+    function onVerFlyer(e){
+      const s = objSalas.salas[Number(e.currentTarget.dataset.sala)];
+      if(!s) return;
+      const ev = s.eventos[Number(e.currentTarget.dataset.evento)];
+      if(!ev) return;
+      if(ev.flyer && ev.flyer.trim() !== ''){
+        // Abre la imagen del flyer en otra pestaña
+        window.open(ev.flyer, '_blank');
       } else {
-        alert('No hay archivo de balance para este cliente.');
+        alert('No hay flyer para este evento.');
       }
     }
 
     function vaciarTabla(){
-      tbody.innerHTML = '';
-      totalSaldoEl.textContent = '$0.00';
+      contenedor.innerHTML = '';
     }
 
-    btnCargar.addEventListener('click', renderClientes);
+    btnCargar.addEventListener('click', renderSalas);
     btnVaciar.addEventListener('click', vaciarTabla);
 
-    // utilidades
     function escapeHtml(s){
       if(s === null || s === undefined) return '';
       return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }
 
-    // opcional: carga inicial automática si querés
-    // window.addEventListener('DOMContentLoaded', renderClientes);
   </script>
 </body>
 </html>
