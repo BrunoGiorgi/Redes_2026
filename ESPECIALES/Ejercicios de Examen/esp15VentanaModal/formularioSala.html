@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Formulario - Eventos por Sala</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; font-size: 16px; }
+    header, footer { background-color: rgb(0, 4, 255); color: white; text-align: center; padding: 10px; position: fixed; width: 100%; z-index: 10; }
+    header { top: 0; height: 12%; }
+    footer { bottom: 0; height: 10%; }
+
+    h1 { font-size: 1.5em; }
+    h2 { font-size: 1.1em; }
+
+    main { overflow-y: auto; height: 78%; width: 100%; background-color: silver; padding: 10px; position: fixed; top: 12%; }
+    form { width: 100%; overflow: hidden; }
+
+    label { display: block; margin-left: 15px; margin-bottom: 8px; }
+    input, select { display: block; width: 320px; max-width: 95%; height: 50px; margin-left: 15px; margin-bottom: 18px; padding: 0.4em 0.5em; font-size: 1rem; }
+    .form-box { width: 45%; float: left; padding: 10px; margin: 0.5%; }
+
+    #imgFlyer { display: none; max-width: 320px; max-height: 200px; margin-left: 15px; margin-bottom: 18px; border: 1px solid #555; }
+
+    .botones { clear: both; width: 100%; text-align: center; padding: 10px; margin-top: 20px; }
+    button { padding: 10px 20px; margin: 10px; font-size: 1rem; width: 33%; border-radius: 8px; border: none; background-color: rgb(0, 4, 255); color: white; cursor: pointer; }
+    button:hover { background-color: rgb(0, 0, 180); }
+
+    @media (max-width: 795px) {
+      .form-box { width: 98%; }
+      button { width: 90%; margin-top: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Formulario de Eventos por Sala</h1>
+  </header>
+
+  <main>
+    <form id="formEventos" novalidate>
+      <div class="form-box">
+        <label for="selSala">Seleccionar Sala:</label>
+        <select id="selSala" required></select>
+
+        <label for="CodSala">Código de sala:</label>
+        <input type="text" id="CodSala" readonly>
+
+        <label for="DescSala">Descripción de sala:</label>
+        <input type="text" id="DescSala" readonly>
+
+        <label for="selEvento">Seleccionar Evento:</label>
+        <select id="selEvento" required></select>
+      </div>
+
+      <div class="form-box">
+        <label for="CodEvento">Código de evento:</label>
+        <input type="text" id="CodEvento" readonly>
+
+        <label for="DescEvento">Descripción:</label>
+        <input type="text" id="DescEvento" readonly>
+
+        <label for="FechaEvento">Fecha del evento:</label>
+        <input type="date" id="FechaEvento" readonly>
+
+        <label for="Recaudacion">Recaudación:</label>
+        <input type="number" id="Recaudacion" readonly>
+
+        <label for="Flyer">Flyer:</label>
+        <input type="text" id="Flyer" readonly>
+        <img id="imgFlyer" alt="Flyer del evento">
+      </div>
+
+      <div class="botones">
+        <button type="submit">Enviar</button>
+      </div>
+    </form>
+  </main>
+
+  <footer>
+    <h2>Pie del formulario</h2>
+  </footer>
+
+  <script>
+    var textoJSONSalas = '{"salas":[' +
+      '{"sala":{"codigo":"S01","descripcion":"Salón Principal"},"eventos":[' +
+        '{"codigo_evento":"EV001","descripcion":"Fiesta de cumpleaños 15","fecha_evento":"2026-11-07","recaudacion":850000,"flyer":"flyers/EV001.jpg"},' +
+        '{"codigo_evento":"EV004","descripcion":"Casamiento","fecha_evento":"2026-12-05","recaudacion":1750000,"flyer":"flyers/EV004.jpg"}' +
+      ']},' +
+      '{"sala":{"codigo":"S02","descripcion":"Sala de Conferencias"},"eventos":[' +
+        '{"codigo_evento":"EV002","descripcion":"Charla de tecnología y redes","fecha_evento":"2026-11-12","recaudacion":320000,"flyer":"flyers/EV002.png"}' +
+      ']}' +
+    ']}';
+
+    var objSalas = JSON.parse(textoJSONSalas);
+
+    const selSala = document.getElementById('selSala');
+    const codSalaInput = document.getElementById('CodSala');
+    const descSalaInput = document.getElementById('DescSala');
+    const selEvento = document.getElementById('selEvento');
+    const codEventoInput = document.getElementById('CodEvento');
+    const descEventoInput = document.getElementById('DescEvento');
+    const fechaInput = document.getElementById('FechaEvento');
+    const recaudacionInput = document.getElementById('Recaudacion');
+    const flyerInput = document.getElementById('Flyer');
+    const imgFlyer = document.getElementById('imgFlyer');
+
+    imgFlyer.addEventListener('error', () => { imgFlyer.style.display = 'none'; });
+    imgFlyer.addEventListener('load', () => { imgFlyer.style.display = 'block'; });
+
+    objSalas.salas.forEach((s, idx) => {
+      const o = document.createElement('option');
+      o.value = idx;
+      o.textContent = `${s.sala.codigo} — ${s.sala.descripcion}`;
+      selSala.appendChild(o);
+    });
+
+    function mostrarSala(idxSala){
+      const s = objSalas.salas[idxSala];
+      if(!s) return;
+      codSalaInput.value = s.sala.codigo;
+      descSalaInput.value = s.sala.descripcion;
+
+      selEvento.innerHTML = '';
+      s.eventos.forEach((ev, idx) => {
+        const o = document.createElement('option');
+        o.value = idx;
+        o.textContent = `${ev.codigo_evento} — ${ev.descripcion}`;
+        selEvento.appendChild(o);
+      });
+
+      if(s.eventos.length > 0){
+        selEvento.value = 0;
+        mostrarEvento(idxSala, 0);
+      } else {
+        limpiarEvento();
+      }
+    }
+
+    function mostrarEvento(idxSala, idxEvento){
+      const s = objSalas.salas[idxSala];
+      if(!s) return;
+      const ev = s.eventos[idxEvento];
+      if(!ev) return;
+      codEventoInput.value = ev.codigo_evento;
+      descEventoInput.value = ev.descripcion;
+      fechaInput.value = ev.fecha_evento || '';
+      recaudacionInput.value = (typeof ev.recaudacion === 'number') ? ev.recaudacion : '';
+      flyerInput.value = ev.flyer || '';
+      if(ev.flyer){
+        imgFlyer.src = ev.flyer;
+      } else {
+        imgFlyer.removeAttribute('src');
+        imgFlyer.style.display = 'none';
+      }
+    }
+
+    function limpiarEvento(){
+      codEventoInput.value = '';
+      descEventoInput.value = '';
+      fechaInput.value = '';
+      recaudacionInput.value = '';
+      flyerInput.value = '';
+      imgFlyer.removeAttribute('src');
+      imgFlyer.style.display = 'none';
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      if(objSalas.salas.length > 0){
+        selSala.value = 0;
+        mostrarSala(0);
+      }
+    });
+
+    selSala.addEventListener('change', () => mostrarSala(Number(selSala.value)));
+    selEvento.addEventListener('change', () => mostrarEvento(Number(selSala.value), Number(selEvento.value)));
+
+    document.getElementById('formEventos').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const s = objSalas.salas[Number(selSala.value)];
+      const ev = s ? s.eventos[Number(selEvento.value)] : null;
+      if(!ev){
+        alert('Seleccioná un evento antes de enviar.');
+        return;
+      }
+      const datos = { sala: s.sala, evento: ev };
+      alert('Formulario enviado (simulado).\nEvento:\n' + JSON.stringify(datos, null, 2));
+
+      try {
+        parent.postMessage('form-submitted', '*');
+      } catch (err) {
+        console.warn('postMessage falló:', err);
+      }
+    });
+  </script>
+
+</body>
+</html>
