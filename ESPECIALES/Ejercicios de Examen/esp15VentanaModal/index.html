@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Datos Logísticos de Clientes</title>
+  <title>Eventos de Alquiler de Salas</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -106,26 +106,29 @@
   </style>
 </head>
 <body>
- 
+
   <div id="appContent">
     <header>
-      <h1>Datos Logísticos de Clientes</h1>
+      <h1>Eventos de Alquiler de Salas</h1>
     </header>
 
     <main style="padding: 30px;">
-      <p>Haz clic en el botón para abrir el formulario de gestión de clientes.</p>
+      <p>Hacé clic en el botón para abrir el formulario de eventos por sala.</p>
       <button id="abrirModal">Abrir Formulario</button>
     </main>
 
+    <footer>
+      Alquiler de salas
+    </footer>
   </div>
 
   <div id="miModal" class="modal" aria-hidden="true" role="dialog">
     <div class="modal-content" role="document">
       <div class="modal-header">
         <span class="close" id="cerrarModal" title="Cerrar">&times;</span>
-        <p>Formulario de Datos del Cliente</p>
+        <p>Formulario de Eventos por Sala</p>
       </div>
-      <iframe id="formIframe" src="formularioClientes.html"></iframe>
+      <iframe id="formIframe" src="formularioSala.html"></iframe>
     </div>
   </div>
 
@@ -136,40 +139,26 @@
     const appContent = document.getElementById("appContent");
     const iframe = document.getElementById("formIframe");
 
-    // Abrir modal y "bloquear" app content
     function abrirModal() {
       appContent.classList.add("inactivo");
       modal.style.display = "flex";
       modal.setAttribute("aria-hidden", "false");
     }
 
-    // Cerrar modal y "desbloquear"
     function cerrarModal() {
       modal.style.display = "none";
       modal.setAttribute("aria-hidden", "true");
       appContent.classList.remove("inactivo");
+      iframe.src = iframe.src;
     }
 
     abrirBtn.addEventListener("click", abrirModal);
     cerrarBtn.addEventListener("click", cerrarModal);
     window.addEventListener("click", (ev) => { if (ev.target === modal) cerrarModal(); });
 
-    // Escuchar mensajes desde el iframe (form)
     window.addEventListener("message", (e) => {
-      // Por seguridad podés comprobar e.origin aquí cuando subas a dominio real.
       if (e.data === "form-submitted") {
-        // cerrar modal al recibir notificación de envío desde el iframe
         cerrarModal();
-      }
-      // opcional: podrías procesar otros mensajes aquí
-    });
-
-    // Intenta agregar listener seguro cuando el iframe cargue (por si el form quiere que padre haga focus)
-    iframe.addEventListener("load", () => {
-      try {
-        // noop; el form enviará postMessage por su cuenta.
-      } catch (err) {
-        // no hay acceso cross-origin en servidores distintos
       }
     });
   </script>
