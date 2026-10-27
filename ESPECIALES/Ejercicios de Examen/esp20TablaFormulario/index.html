@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Maestro de Clientes - Datos Logísticos</title>
+  <title>Eventos por Sala - Alquiler de Salas</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Segoe UI", Arial, sans-serif; }
     body { background-color: #f2f4f8; color: #333; }
@@ -22,7 +22,7 @@
       background-color: #f0f0f0; color: #000;
     }
 
-    .table-container { position: absolute; top: 70px; bottom: 50px; left: 0; right: 0; overflow: hidden; padding: 20px; }
+    .table-container { position: absolute; top: 70px; bottom: 50px; left: 0; right: 0; overflow-y: auto; padding: 20px; }
     .botones { display: flex; gap: 10px; align-items:center; }
     .botones button {
       background-color: white; border: 2px solid #0056b3; color: #0056b3;
@@ -31,23 +31,20 @@
     }
     .botones button:hover { background-color: #0056b3; color: white; }
 
+    h3 { font-size: 1.2em; color: #0056b3; margin: 10px 0; }
+    .sala { margin-bottom: 30px; }
+
     table { width: 100%; border-collapse: collapse; background-color: white; border-radius: 10px; overflow: hidden; box-shadow: 0 3px 8px rgba(0,0,0,0.1); }
-    thead, tfoot { background-color: #0077cc; color: white; }
-    thead th, tfoot th { padding: 12px; text-align: left; position: sticky; z-index: 5; }
-    thead th { top: 0; }
-    tfoot th { bottom: 0; background-color: orange; color: #000; }
-
-    tbody { display: block; height: calc(100vh - 240px); overflow-y: auto; width: 100%; }
-    thead, tfoot, tbody tr { display: table; width: 100%; table-layout: fixed; }
-    th { background-color: #0077cc; color: white; padding: 12px; text-align: left; position: sticky; top: 0; z-index: 5; }
+    th { background-color: #0077cc; color: white; padding: 12px; text-align: left; }
     td { padding: 10px; border-bottom: 1px solid #ddd; vertical-align: middle; word-wrap: break-word; }
-    tr:nth-child(even) { background-color: #f0f6ff; }
+    tbody tr:nth-child(even) { background-color: #f0f6ff; }
+    tfoot td { background-color: orange; color: #000; font-weight: bold; }
 
-    .saldo-neg { color: #c62828; font-weight: 700; }
+    .total-general { background-color: #0056b3; color: white; font-weight: bold; padding: 14px; border-radius: 10px; font-size: 1.1em; }
+
     .accion-btn { padding: 6px 8px; font-size: 0.9rem; border-radius: 6px; border: 1px solid #0077cc; background: white; color: #0077cc; cursor: pointer; }
     .accion-btn:hover { background:#0077cc; color:#fff; }
 
-    /* modal overlay for iframe form */
     .modal {
       display: none;
       position: fixed;
@@ -67,18 +64,19 @@
     .modal-header { background: #0056b3; color: #fff; padding: 12px 16px; position: relative; }
     .close { position: absolute; right: 12px; top: 8px; font-size: 24px; color: #fff; cursor: pointer; }
 
-    iframe { width: 100%; height: 650px; border: none; display: block; }
+    iframe { width: 100%; height: 650px; max-height: 80vh; border: none; display: block; }
 
     @media (max-width: 900px) {
       header { height: 90px; flex-direction: column; gap: 6px; padding: 10px 12px; align-items: flex-start; }
+      .table-container { top: 90px; }
+      th, td { font-size: 0.9rem; padding: 8px; }
     }
   </style>
 </head>
 <body>
   <header>
     <div style="display:flex;align-items:center;gap:14px">
-      <h2 style="color:#eaf6ff;margin:0">Clientes</h2>
-
+      <h2 style="color:#eaf6ff;margin:0">Eventos por sala</h2>
     </div>
 
     <div class="botones">
@@ -89,141 +87,146 @@
   </header>
 
   <div class="table-container">
-    <table id="tablaClientes" aria-label="Tabla de clientes">
-      <thead>
-        <tr>
-          <th>CodCliente</th>
-          <th>Razón Social</th>
-          <th>CUIT</th>
-          <th>Cond. IVA</th>
-          <th>Fecha Inicio</th>
-          <th>Saldo (ARS)</th>
-          <th>Últ. Balance</th>
-          <th>Acción</th>
-        </tr>
-      </thead>
-      <tbody id="cuerpo"></tbody>
-      <tfoot>
-        <tr>
-          <th colspan="5">Total Saldo (ARS)</th>
-          <th id="totalSaldo">$0.00</th>
-          <th colspan="2"></th>
-        </tr>
-      </tfoot>
-    </table>
+    <div id="contenedor"></div>
   </div>
 
   <footer>Pie de pagina</footer>
 
-  <!-- Modal que carga formularioClientes.html en un iframe -->
   <div id="modalForm" class="modal" aria-hidden="true" role="dialog">
     <div class="modal-content" role="document" aria-modal="true">
       <div class="modal-header">
-        <strong>Formulario de Cliente</strong>
+        <strong>Formulario de Eventos por Sala</strong>
         <span class="close" id="cerrarModal" title="Cerrar">&times;</span>
       </div>
-      <iframe id="formIframe" src="formularioClientes.html" title="Formulario de Clientes"></iframe>
+      <iframe id="formIframe" src="formularioSala.html" title="Formulario de Eventos por Sala"></iframe>
     </div>
   </div>
 
   <script>
-    // JSON de clientes (concatenado)
-    var textoJSONClientes = '{"clientes":[' +
-    '{"CodCliente":"C0001","RazonSocial":"Comercial Alfa S.A.","CUIT":"30-12345678-9","CondicionIVA":"IVA_GENERAL","FechaInicio":"2024-03-01","SaldoCuentaCorriente":15200.75,"UltimoBalance":"balance_C0001_2024-12-31.pdf"},' +
-    '{"CodCliente":"C0002","RazonSocial":"Servicios Beta SRL","CUIT":"27-87654321-4","CondicionIVA":"IVA_REDUCIDO","FechaInicio":"2023-07-15","SaldoCuentaCorriente":-450.0,"UltimoBalance":"balance_C0002_2024-06-30.pdf"}' +
+    var textoJSONSalas = '{"salas":[' +
+      '{"sala":{"codigo":"S01","descripcion":"Salón Principal"},"eventos":[' +
+        '{"codigo_evento":"EV001","descripcion":"Fiesta de cumpleaños 15","fecha_evento":"2026-11-07","recaudacion":850000,"flyer":"flyers/EV001.jpg"},' +
+        '{"codigo_evento":"EV004","descripcion":"Casamiento","fecha_evento":"2026-12-05","recaudacion":1750000,"flyer":"flyers/EV004.jpg"}' +
+      ']},' +
+      '{"sala":{"codigo":"S02","descripcion":"Sala de Conferencias"},"eventos":[' +
+        '{"codigo_evento":"EV002","descripcion":"Charla de tecnología y redes","fecha_evento":"2026-11-12","recaudacion":320000,"flyer":"flyers/EV002.png"}' +
+      ']}' +
     ']}';
-    var objClientes = JSON.parse(textoJSONClientes);
+    var objSalas = JSON.parse(textoJSONSalas);
 
     const btnCargar = document.getElementById('btnCargar');
     const btnVaciar = document.getElementById('btnVaciar');
     const btnAbrirForm = document.getElementById('btnAbrirForm');
-    const tbody = document.getElementById('cuerpo');
-    const totalSaldoEl = document.getElementById('totalSaldo');
+    const contenedor = document.getElementById('contenedor');
 
     const modal = document.getElementById('modalForm');
     const iframe = document.getElementById('formIframe');
     const cerrarModalBtn = document.getElementById('cerrarModal');
 
     function formatMoney(n){
-      return n.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+      return n.toLocaleString('es-AR', {minimumFractionDigits:2, maximumFractionDigits:2});
     }
     function escapeHtml(s){
       if(s === null || s === undefined) return '';
       return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }
 
-    function renderClientes(){
-      tbody.innerHTML = '';
-      let total = 0;
-      objClientes.clientes.forEach((c, idx) => {
-        const tr = document.createElement('tr');
-        const saldo = Number(c.SaldoCuentaCorriente) || 0;
-        total += saldo;
-        tr.innerHTML = `
-          <td>${escapeHtml(c.CodCliente)}</td>
-          <td>${escapeHtml(c.RazonSocial)}</td>
-          <td>${escapeHtml(c.CUIT)}</td>
-          <td>${escapeHtml(c.CondicionIVA)}</td>
-          <td>${escapeHtml(c.FechaInicio)}</td>
-          <td class="${saldo < 0 ? 'saldo-neg' : ''}">${saldo < 0 ? '-' : ''}$${formatMoney(Math.abs(saldo))}</td>
-          <td>${c.UltimoBalance ? escapeHtml(c.UltimoBalance) : '-'}</td>
-          <td><button class="accion-btn" data-idx="${idx}">Ver Balance</button></td>
+    function renderSalas(){
+      contenedor.innerHTML = '';
+      let totalGeneral = 0;
+
+      objSalas.salas.forEach((s, idxSala) => {
+        let subtotal = 0;
+        let filas = '';
+
+        s.eventos.forEach((ev, idxEvento) => {
+          const recaudacion = Number(ev.recaudacion) || 0;
+          subtotal += recaudacion;
+          filas += `
+            <tr>
+              <td>${escapeHtml(ev.codigo_evento)}</td>
+              <td>${escapeHtml(ev.descripcion)}</td>
+              <td>${escapeHtml(ev.fecha_evento)}</td>
+              <td>$${formatMoney(recaudacion)}</td>
+              <td>${ev.flyer ? escapeHtml(ev.flyer) : '-'}</td>
+              <td><button class="accion-btn" data-sala="${idxSala}" data-evento="${idxEvento}">Ver Flyer</button></td>
+            </tr>
+          `;
+        });
+
+        totalGeneral += subtotal;
+
+        const seccion = document.createElement('div');
+        seccion.className = 'sala';
+        seccion.innerHTML = `
+          <h3>${escapeHtml(s.sala.codigo)} - ${escapeHtml(s.sala.descripcion)}</h3>
+          <table aria-label="Eventos de ${escapeHtml(s.sala.descripcion)}">
+            <thead>
+              <tr>
+                <th>Cód. Evento</th>
+                <th>Descripción</th>
+                <th>Fecha</th>
+                <th>Recaudación (ARS)</th>
+                <th>Flyer</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody>${filas}</tbody>
+            <tfoot>
+              <tr>
+                <td colspan="3">Total recaudado ${escapeHtml(s.sala.descripcion)}</td>
+                <td>$${formatMoney(subtotal)}</td>
+                <td colspan="2"></td>
+              </tr>
+            </tfoot>
+          </table>
         `;
-        tbody.appendChild(tr);
+        contenedor.appendChild(seccion);
       });
-      totalSaldoEl.textContent = '$' + formatMoney(total);
-      tbody.querySelectorAll('.accion-btn').forEach(btn => btn.addEventListener('click', onVerBalance));
+
+      const total = document.createElement('div');
+      total.className = 'total-general';
+      total.textContent = 'Total general recaudado (ARS): $' + formatMoney(totalGeneral);
+      contenedor.appendChild(total);
+
+      contenedor.querySelectorAll('.accion-btn').forEach(btn => btn.addEventListener('click', onVerFlyer));
     }
 
-    function onVerBalance(e){
-      const idx = Number(e.currentTarget.dataset.idx);
-      const c = objClientes.clientes[idx];
-      if(!c) return;
-      if(c.UltimoBalance && c.UltimoBalance.trim() !== ''){
-        // Si subes los PDFs al mismo directorio, reemplaza alert por: window.open(c.UltimoBalance, '_blank');
-        alert('Simulación: abrir/descargar -> ' + c.UltimoBalance);
+    function onVerFlyer(e){
+      const s = objSalas.salas[Number(e.currentTarget.dataset.sala)];
+      if(!s) return;
+      const ev = s.eventos[Number(e.currentTarget.dataset.evento)];
+      if(!ev) return;
+      if(ev.flyer && ev.flyer.trim() !== ''){
+        window.open(ev.flyer, '_blank');
       } else {
-        alert('No hay archivo de balance para este cliente.');
+        alert('No hay flyer para este evento.');
       }
     }
 
-    function vaciarTabla(){ tbody.innerHTML = ''; totalSaldoEl.textContent = '$0.00'; }
+    function vaciarTabla(){ contenedor.innerHTML = ''; }
 
-    btnCargar.addEventListener('click', renderClientes);
+    btnCargar.addEventListener('click', renderSalas);
     btnVaciar.addEventListener('click', vaciarTabla);
 
-    // abrir modal (iframe)
     btnAbrirForm.addEventListener('click', () => {
       modal.style.display = 'flex';
       modal.setAttribute('aria-hidden','false');
-      // optional: focus inside iframe once loaded
-      // iframe will load formularioClientes.html which posts message on submit
-      document.body.classList.add('modal-open');
     });
 
     function cerrarModal(){
       modal.style.display = 'none';
       modal.setAttribute('aria-hidden','true');
-      document.body.classList.remove('modal-open');
-      // reload table after possible changes signalled by child
-      // renderClientes(); // uncomment if you want immediate refresh on close
+      iframe.src = iframe.src;
     }
 
     cerrarModalBtn.addEventListener('click', cerrarModal);
     window.addEventListener('click', (ev) => { if(ev.target === modal) cerrarModal(); });
 
-    // Listen messages from iframe form (postMessage)
     window.addEventListener('message', (ev) => {
-      // for production check ev.origin
       if(ev.data === 'form-submitted'){
-        // close modal when form notifies it was submitted
         cerrarModal();
-        // optionally refresh table if child sent updated data (future improvement)
-        // renderClientes();
-        // show a quick notification (simple)
-        alert('El formulario ha sido enviado (simulado). Modal cerrada.');
       }
-      // If iframe sends updated client data, you could process it here (not implemented)
     });
   </script>
 </body>
