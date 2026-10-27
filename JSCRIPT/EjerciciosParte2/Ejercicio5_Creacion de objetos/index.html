@@ -11,7 +11,7 @@
   #contenedor {
     width: 600px;
     height: 200px;
-    background-color: #fffacd; /* amarillo claro */
+    background-color: #fffacd;
     overflow-y: auto;
     padding: 5px;
   }
@@ -28,42 +28,41 @@
 <div class="botones">
   <button onclick="crearObjeto()">Crear</button>
   <button onclick="limpiar()">Limpiar</button>
-  <button onclick="salir()">Salir</button>
+  <button onclick="info()">Info</button>
 </div>
 
 <div id="contenedor"></div>
 
 <script>
 function crearObjeto() {
-  // Crear un div dinámico
   var objDiv = document.createElement("div");
 
-  // Texto que muestre cuántos elementos hay ya en contenedor
-  var textoHtml = "<strong>Elemento creado Nº: " 
+  var textoHtml = "<strong>Elemento creado Nº: "
     + (document.getElementById("contenedor").childNodes.length + 1)
     + "</strong>";
 
   objDiv.innerHTML = textoHtml;
 
-  // Clase para estilo
   objDiv.className = "claseObjetoDinamico";
 
-  // Insertar en contenedor
   document.getElementById("contenedor").appendChild(objDiv);
 }
 
 function limpiar() {
-  // Borrar todos los hijos del contenedor
   var contenedor = document.getElementById("contenedor");
   while (contenedor.firstChild) {
     contenedor.removeChild(contenedor.firstChild);
   }
 }
 
-function salir() {
-  // Redirigir a otra página o cerrar
-  alert("Fin del ejercicio");
-  window.close(); // cierra la ventana (solo si se abrió con window.open)
+function info() {
+  var hijos = document.getElementById("contenedor").childNodes;
+
+  alert("longitud del childNode: " + hijos.length);
+
+  for (var i = 0; i < hijos.length; i++) {
+    alert("indice: " + i);
+  }
 }
 </script>
 
